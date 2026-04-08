@@ -127,15 +127,33 @@ function mostrarTela(nomeTela) {
 //     troca copia[i] com copia[j]
 //   retorna copia
 function embaralhar(array) {
-
+    let copia = array.slice()
+    for (let i = copia.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1)) // 3
+        let temp = copia[i] // i = 5 e ele é igual a "joao"
+        copia[i] = copia[j] // lucas 
+        copia[j] = temp
+        // temp = joao
+        // [celso, ana, rafael, lucas, vitor, joao] <- original
+        // [celso, ana, rafael, lucas, vitor, lucas]
+        // [celso, ana, rafael, joao, vitor, lucas]
+    }
+    return copia
 }
-
+let resultado = embaralhar([1, 2, 3, 4, 5, 6])
+let resultado1 = embaralhar([1, 2, 3, 4, 5, 6])
+let resultado2 = embaralhar([1, 2, 3, 4, 5, 6])
+console.log(resultado)
+console.log(resultado1)
+console.log(resultado2)
 
 // calcularPontos(segundosRestantes)
 // Retorna: 500 + (segundosRestantes * 25)
 function calcularPontos(segundosRestantes) {
-
+    return 500 + (segundosRestantes * 25)
 }
+
+console.log(calcularPontos(5))
 
 
 // ------------------------------------------------------------
@@ -155,9 +173,15 @@ function iniciarJogo() {
     }
 
     els.erroNickname.textContent = "";
-    estado.nickName = nome
+    estado.nickName = nome;
+    estado.pontos = 0;
+    estado.indiceAtual = 0;
+    estado.acertos = 0;
+    estado.erros = 0;
+    estado.perguntasJogo = embaralhar(perguntas)
 
     mostrarTela("questao")
+    mostrarPergunta()
 }
 els.inputNickname.addEventListener("keydown", function (e) {
     if (e.key === "Enter") {
@@ -177,7 +201,7 @@ els.btnIniciar.addEventListener("click", iniciarJogo)
 // Atenção: use "let i" no for, não "var i".
 // Chama iniciarTimer().
 function mostrarPergunta() {
-    let pergunta = estado.perguntasJogo[estado.indiceAtual]
+    let pergunta = estado.perguntasJogo[estado.indiceAtual];
     estado.respondeu = false;
     
     // progresso do jogo
@@ -204,7 +228,7 @@ function mostrarPergunta() {
         btn.type = "button"
 
         let spanLetra = document.createElement("span")
-        spanLetra.className = "opcao-letra" + classes[i]
+        spanLetra.className = "opcao-letra " + classes[i]
         spanLetra. textContent = letras[i]
 
         let spanTexto = document.createElement("span")
@@ -244,7 +268,36 @@ function iniciarTimer() {
 // Marca botões com classList: "correta" e "errada".
 // setTimeout de 1s → mostrarFeedback().
 function responder(indiceEscolhido) {
+    if (estado.respondeu) {
+        return
+    }
+    estado.respondeu = true
 
+    let pergunta = estado.perguntasJogo[estado.indiceAtual]
+    let acertou = (indiceEscolhido === pergunta.correta)
+
+    let botoes = els.opcoesGrid.querySelectorAll(".opcao-btn")
+
+    botoes.forEach(function(btn, idx){
+        btn.disabled = true
+        if(idx === pergunta.correta) {
+            btn.classList.add("correta")
+        }else if (idx === indiceEscolhido) {
+            btn.classList.add("errada")
+        }
+    })
+    
+    setTimeout(function(){
+        if (acertou){
+            let pts = calcularPontos(estado.timerSegundos)
+            estado.pontos += pts
+            estado.acertos++
+            mostrarFeedback(true, pts, pergunta.explicacao)
+        } else {
+            estado.erros++
+            mostrarFeedback(false, 0, pergunta.explicacao)
+        }
+    }, 1000)
 }
 
 
@@ -252,7 +305,22 @@ function responder(indiceEscolhido) {
 // Atualiza ícone, título, pontos e explicação.
 // Chama mostrarTela("feedback").
 function mostrarFeedback(acertou, pontosGanhos, explicacao) {
+if (acertou){
+    els.feedbackIcone.textContent = "😉✅"
+    els.feedbackTitulo.textContent = "Correto"
+    els.feedbackTitulo.className = "feedback-titulo acerto"
+    els.feedbackPontos.textContent = "+" + pontosGanhos
+} else {
+    els.feedbackIcone.textContent = "😓❌"
+    els.feedbackTitulo.textContent = "Errou!"
+    els.feedbackTitulo.className = "feedback-titulo erro"
+    els.feedbackPontos.textContent = "+0"
+}
 
+els.feedbackExplic.textContent = explicacao
+els.placarParcial.textContent = estado.pontos
+
+mostrarFeedback("FeedBack")
 }
 
 

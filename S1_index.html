@@ -5,12 +5,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>QuizCaju</title>
-
-  <!-- ❌ os scripts estão aqui no <head>.
-       O JS roda antes do HTML existir — getElementById retorna null.
-       Scripts devem ficar no final do <body>. -->
-  
-
   <link rel="stylesheet" href="S1_style.css" />
 </head>
 
@@ -89,7 +83,7 @@
     </header>
 
     <!-- ❌ id errado. O app.js procura "categoria-tag". -->
-    <div class="categoria-tag" id="tag-categoria">HTML</div>
+    <div class="categoria-tag" id="categoria-tag">HTML</div>
 
     <div class="questao-card">
       <p class="questao-texto" id="questao-texto">
@@ -177,7 +171,7 @@
   </section>
 
   <script src="S1_app.skeleton.js"></script>
-  <script src="S1_questions.js"></script>
+  <script src="S1_questions.js" ></script>
 </body>
 
 </html>
