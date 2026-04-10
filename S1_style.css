@@ -18,7 +18,10 @@
   --cor-texto:      #222222;
   --cor-texto-2:    #777777;
   --cor-acerto:     #2e7d32;
-  --cor-erro:       #c62828;
+  --cor-erro:       #d63515;
+  --laranja:        #fdae0f;
+  --amarelo:        #eeff00;
+  --vermelho:       #ea1414;
 
   --fonte-corpo: 'Nunito', sans-serif;
   --fonte-mono:  'JetBrains Mono', monospace;
