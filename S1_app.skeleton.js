@@ -415,7 +415,7 @@ function init(){
     if(categorias.indexOf(perguntas[i].categoria) === -1){
         console.log("resultado da verificação" + categorias.indexOf(perguntas[i].categorias))
         console.log(perguntas[i].categorias)
-        console.log(categoria)
+        console.log(categorias)
         categorias.push(perguntas[i].categoria)
     }
  }
