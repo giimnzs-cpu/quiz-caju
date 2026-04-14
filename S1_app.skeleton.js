@@ -71,6 +71,7 @@ const els = {
     btnIniciar: document.getElementById("btn-iniciar"),
     totalPerguntas: document.getElementById("total-perguntas"),
     totalCategorias: document.getElementById("total-categorias"),
+    loadingMsg: document.getElementById("loading-msg"),
 
     // questão
     questaoAtual: document.getElementById("questao-atual"),
@@ -164,7 +165,7 @@ console.log(calcularPontos(5))
 // Valida nickname (mínimo 2 chars).
 // Reseta o estado. Embaralha as perguntas.
 // Chama mostrarTela("questao") e mostrarPergunta().
-function iniciarJogo() {
+async function iniciarJogo() {
     let nome = els.inputNickname.value.trim()
 
     if (nome.length < 3) {
@@ -178,7 +179,8 @@ function iniciarJogo() {
     estado.indiceAtual = 0;
     estado.acertos = 0;
     estado.erros = 0;
-    estado.perguntasJogo = embaralhar(perguntas)
+    var todasPerguntas = await window.bancoDePerguntasAsync
+    estado.perguntasJogo = embaralhar(todasPerguntas)
 
     mostrarTela("questao")
     mostrarPergunta()
@@ -203,7 +205,7 @@ els.btnIniciar.addEventListener("click", iniciarJogo)
 function mostrarPergunta() {
     let pergunta = estado.perguntasJogo[estado.indiceAtual];
     estado.respondeu = false;
-    
+
     // progresso do jogo
     let num = estado.indiceAtual + 1;
     let total = estado.perguntasJogo.length
@@ -222,14 +224,14 @@ function mostrarPergunta() {
     let letras = ["A", "B", "C", "D"]
     let classes = ["letras-a", "letra-b", "letra-c", "letra-d"]
 
-    for (let i = 0; i < pergunta.opcoes.length; i++){
+    for (let i = 0; i < pergunta.opcoes.length; i++) {
         let btn = document.createElement("button")
         btn.className = "opcao-btn"
         btn.type = "button"
 
         let spanLetra = document.createElement("span")
         spanLetra.className = "opcao-letra " + classes[i]
-        spanLetra. textContent = letras[i]
+        spanLetra.textContent = letras[i]
 
         let spanTexto = document.createElement("span")
         spanTexto.className = "opcao-texto"
@@ -239,14 +241,14 @@ function mostrarPergunta() {
         btn.appendChild(spanTexto)
 
         // let i garante que cada botão captura seu própio indice
-        btn.addEventListener("click", function(){
+        btn.addEventListener("click", function () {
             responder(i)
 
         })
-        
-        els.opcoesGrid.appendChild(btn) 
-     }
-     iniciarTimer()
+
+        els.opcoesGrid.appendChild(btn)
+    }
+    iniciarTimer()
 
 }
 
@@ -257,7 +259,7 @@ function mostrarPergunta() {
 // A cada 1000ms: decrementa, atualiza DOM, move arco SVG.
 // Se timerSegundos <= 0: clearInterval e responder(-1).
 function iniciarTimer() {
-    
+
     let CIRCUNFERENCIA = 107
 
     estado.timerSegundos = 20
@@ -267,7 +269,7 @@ function iniciarTimer() {
 
     clearInterval(estado.timerIntervalo)
 
-    estado.timerIntervalo = setInterval(function(){
+    estado.timerIntervalo = setInterval(function () {
         estado.timerSegundos--
         els.timerNum.textContent = estado.timerSegundos
 
@@ -275,11 +277,11 @@ function iniciarTimer() {
         els.timerArco.style.strokeDashoffset = CIRCUNFERENCIA * (1 - progresso)
         if (estado.timerSegundos <= 5) {
             els.timerArco.style.stroke = "var(--vermelho)"
-        }else if (estado.timerSegundos <= 10){
+        } else if (estado.timerSegundos <= 10) {
             els.timerArco.style.stroke = "var(--amarelo)"
         }
 
-        if(estado.timerSegundos <= 0){
+        if (estado.timerSegundos <= 0) {
             clearInterval(estado.timerIntervalo)
             responder(-1)
         }
@@ -301,21 +303,22 @@ function responder(indiceEscolhido) {
     estado.respondeu = true
 
     let pergunta = estado.perguntasJogo[estado.indiceAtual]
-    let acertou = (indiceEscolhido === pergunta.correta)
+    var indiceCorreto = pergunta.correta
+    var acertou = (indiceEscolhido === indiceCorreto)
 
     let botoes = els.opcoesGrid.querySelectorAll(".opcao-btn")
 
-    botoes.forEach(function(btn, idx){
+    botoes.forEach(function (btn, idx) {
         btn.disabled = true
-        if(idx === pergunta.correta) {
+        if (idx === indiceCorreto) {
             btn.classList.add("correta")
-        }else if (idx === indiceEscolhido) {
+        } else if (idx === indiceEscolhido) {
             btn.classList.add("errada")
         }
     })
-    
-    setTimeout(function(){
-        if (acertou){
+
+    setTimeout(function () {
+        if (acertou) {
             let pts = calcularPontos(estado.timerSegundos)
             estado.pontos += pts
             estado.acertos++
@@ -332,22 +335,22 @@ function responder(indiceEscolhido) {
 // Atualiza ícone, título, pontos e explicação.
 // Chama mostrarTela("feedback").
 function mostrarFeedback(acertou, pontosGanhos, explicacao) {
-if (acertou){
-    els.feedbackIcone.textContent = "😉✅"
-    els.feedbackTitulo.textContent = "Correto"
-    els.feedbackTitulo.className = "feedback-titulo acerto"
-    els.feedbackPontos.textContent = "+" + pontosGanhos
-} else {
-    els.feedbackIcone.textContent = "😓❌"
-    els.feedbackTitulo.textContent = "Errou!"
-    els.feedbackTitulo.className = "feedback-titulo erro"
-    els.feedbackPontos = "+0"
-}
+    if (acertou) {
+        els.feedbackIcone.textContent = "😉✅"
+        els.feedbackTitulo.textContent = "Correto"
+        els.feedbackTitulo.className = "feedback-titulo acerto"
+        els.feedbackPontos.textContent = "+" + pontosGanhos
+    } else {
+        els.feedbackIcone.textContent = "😓❌"
+        els.feedbackTitulo.textContent = "Errou!"
+        els.feedbackTitulo.className = "feedback-titulo erro"
+        els.feedbackPontos = "+0"
+    }
 
-els.feedbackExplic.textContent = explicacao
-els.placarParcial.textContent = estado.pontos
+    els.feedbackExplic.textContent = explicacao
+    els.placarParcial.textContent = estado.pontos
 
-mostrarTela("feedback")
+    mostrarTela("feedback")
 }
 
 
@@ -358,13 +361,13 @@ mostrarTela("feedback")
 function proximaPergunta() {
     estado.indiceAtual++
     // console.log(estado.indiceAtual)
-   if(estado.indiceAtual < estado.perguntasJogo.length){
-    mostrarTela("questao")
-    mostrarPergunta()
-   } else {
-    mostrarResultado()
-   }
-    
+    if (estado.indiceAtual < estado.perguntasJogo.length) {
+        mostrarTela("questao")
+        mostrarPergunta()
+    } else {
+        mostrarResultado()
+    }
+
 
 }
 els.btnProxima.addEventListener('click', proximaPergunta)
@@ -373,34 +376,34 @@ els.btnProxima.addEventListener('click', proximaPergunta)
 // Atualiza DOM da tela de resultado.
 // Chama mostrarTela("resultado").
 function mostrarResultado() {
-  let total = estado.perguntasJogo.length
-  let aproveitamento = Math.round((estado.acertos / total) * 100)
+    let total = estado.perguntasJogo.length
+    let aproveitamento = Math.round((estado.acertos / total) * 100)
 
-  let medalha = "😉"
-let mensagem = "Continue praticando, você vai melhorar!";
+    let medalha = "😉"
+    let mensagem = "Continue praticando, você vai melhorar!";
 
-if(aproveitamento >= 90){
-    medalha = "🏆";
-    mensagem = "Incrível!, Você domina o conteúdo!";
-}else if(aproveitamento >= 70){
-    medalha = "🥈"
-    mensagem = "Muito bem, Quase lá, estude um pouco mais e volte."
-}else if(aproveitamento >= 50){
-    medalha = "🥉"
-    mensagem = "Bom começo!, revise os erros e tente novamente"
-}
+    if (aproveitamento >= 90) {
+        medalha = "🏆";
+        mensagem = "Incrível!, Você domina o conteúdo!";
+    } else if (aproveitamento >= 70) {
+        medalha = "🥈"
+        mensagem = "Muito bem, Quase lá, estude um pouco mais e volte."
+    } else if (aproveitamento >= 50) {
+        medalha = "🥉"
+        mensagem = "Bom começo!, revise os erros e tente novamente"
+    }
 
- els.resultadoMedalha.textContent = medalha
- els.resultadoNome.textContent= estado.nickName
- els.scoreFinal.textContent = estado.pontos
- els.statAcertos.textContent = estado.acertos
- els.statErros.textContent = estado.erros
- els.statPorcento.textContent = aproveitamento + "%"
- els.resultadoMsg.textContent = mensagem
+    els.resultadoMedalha.textContent = medalha
+    els.resultadoNome.textContent = estado.nickName
+    els.scoreFinal.textContent = estado.pontos
+    els.statAcertos.textContent = estado.acertos
+    els.statErros.textContent = estado.erros
+    els.statPorcento.textContent = aproveitamento + "%"
+    els.resultadoMsg.textContent = mensagem
 
 
     mostrarTela("resultado")
-    
+
 
 }
 
@@ -409,8 +412,8 @@ if(aproveitamento >= 90){
 // Limpa o campo de nickname.
 // Chama mostrarTela("home").
 function reiniciarJogo() {
-els.inputNickname.value = "";
-mostrarTela("home");
+    els.inputNickname.value = "";
+    mostrarTela("home");
 }
 
 els.btnJogarNovamente.addEventListener("click", reiniciarJogo)
@@ -433,23 +436,31 @@ els.btnJogarNovamente.addEventListener("click", reiniciarJogo)
 // Crie a função init() e chame ela aqui.
 // Ela deve preencher totalPerguntas e totalCategorias na home.
 // ------------------------------------------------------------
-function init(){
-    let categorias = []
-    
-    for (let i = 0; i < perguntas.length; i++){
-    // perguntas[i].categoria === HTML (indexOf vai retornar -1) então
-    // não existe ainda na nossas categorias destintas
-    if(categorias.indexOf(perguntas[i].categoria) === -1){
-        console.log("resultado da verificação" + categorias.indexOf(perguntas[i].categorias))
-        console.log(perguntas[i].categorias)
-        console.log(categorias)
-        categorias.push(perguntas[i].categoria)
-    }
- }
-console.log(categorias)
+async function init() {
+    els.btnIniciar.disabled = true
+    els.loadingMsg.textContent = "carregando perguntas..."
 
-els.totalPerguntas.textContent = perguntas.length
-els.totalCategorias.textContent = categorias.length
+    try {
+        let perguntas = await window.bancoDePerguntasAsync
+
+        let categorias = []
+        for (let i = 0; i < perguntas.length; i++) {
+            if (categorias.indexOf(perguntas[i].categoria) === -1) {
+                categorias.push(perguntas[i].categoria)
+            }
+        }
+
+        els.totalPerguntas.textContent = perguntas.length
+        els.totalCategorias.textContent = categorias.length
+        els.loadingMsg.textContent = ""
+        els.btnIniciar.disabled = false
+
+    } catch (erro) {
+        els.loadingMsg.textContent = "erro ao carregar. recarregue a página."
+        console.error("[QuizCaju] Falha na inicialização:", erro)
+    }
 }
+
+
 
 init()
